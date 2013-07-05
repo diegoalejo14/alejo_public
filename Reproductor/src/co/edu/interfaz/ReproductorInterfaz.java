@@ -158,7 +158,7 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 				reproduciendo = new JLabel();
 				getContentPane().add(reproduciendo);
 				reproduciendo.setText("Cancion");
-				reproduciendo.setBounds(250, 32, 150, 16);
+				reproduciendo.setBounds(250, 32, 100, 16);
 			}
 			{
 				seperador = new JSeparator();
@@ -168,7 +168,7 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 			{
 				cancion = new JLabel();
 				getContentPane().add(cancion);
-				cancion.setBounds(410, 32, 200, 24);
+				cancion.setBounds(350, 32, 200, 24);
 				cancion.setBackground(Color.RED);
 			}
 			{

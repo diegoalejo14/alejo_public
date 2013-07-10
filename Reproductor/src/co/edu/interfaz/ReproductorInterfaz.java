@@ -7,20 +7,16 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.InputMap;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -32,6 +28,9 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -76,8 +75,6 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 	private JSeparator jSeparator2;
 	private JMenuItem saveMenuItem;
 	private JComboBox artistas;
-	private JButton jButton3;
-	private JButton jButton2;
 	private JMenuItem openFileMenuItem;
 	private JMenuItem newFileMenuItem;
 	private JMenu jMenu3;
@@ -85,11 +82,14 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 	private final IReproductor reproductor;
 	private JTable tablaCanciones;
 	private TablaCanciones tab;
+	private TablaCanciones tabReproducidas;
 	private JScrollPane scrollPane;
-	private List<Cancion> listaReproducida;
+//	private List<Cancion> listaReproducida;
 	private int indice=0;
 	private JLabel nombreArtista;
 	private JFileChooser seleccionadorCarpeta;
+	private JTable tablaCancionesReproducidas;
+	private JScrollPane scrollPaneAnterior;
 	
 	
 	
@@ -108,20 +108,29 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 	
 	public ReproductorInterfaz() {
 		super();
-		final DAOCancion daoCancion=new DAOCancion();
-		listaReproducida=new ArrayList<Cancion>();
+//		listaReproducida=new ArrayList<Cancion>();
 		reproductor = new Reproductor();
 		tablaCanciones=new JTable();
 		tab=new TablaCanciones();
 		tablaCanciones.setModel(tab);
+		tabReproducidas=new TablaCanciones();
+		tablaCancionesReproducidas=new JTable();
+		tablaCancionesReproducidas.setModel(tabReproducidas);
+		
 		scrollPane=new JScrollPane();
+		scrollPaneAnterior=new JScrollPane();
 		tablaCanciones.addMouseListener(new MouseAdapter() {
 			
 			public void mouseClicked(MouseEvent e) {
 				int fila = tablaCanciones.rowAtPoint(e.getPoint());
 				fila = tablaCanciones.convertRowIndexToModel(fila);
 				Cancion cancion = tab.obtenerCancion(fila);
-				reproducirCancion(cancion,true);
+				if(SwingUtilities.isLeftMouseButton(e)){
+					reproducirCancion(cancion,true);
+				}else{
+					PantallaCancion pantallaCancion=new PantallaCancion();
+					pantallaCancion.verCancion(cancion);
+				}
 			}
 		});
 		initGUI();
@@ -176,33 +185,7 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 				getContentPane().add(nombreArtista);
 				nombreArtista.setBounds(630, 32, 200, 16);
 			}
-			{
-				jButton2 = new JButton();
-				getContentPane().add(jButton2);
-				jButton2.setText("Pausar");
-				jButton2.setBounds(12, 117, 126, 23);
-				jButton2.addActionListener(new ActionListener() {
-
-					
-					public void actionPerformed(ActionEvent e) {
-						reproductor.pausar();
-					}
-				});
-			}
-			{
-				jButton3 = new JButton();
-				getContentPane().add(jButton3);
-				jButton3.setText("Reproducir");
-				jButton3.setBounds(12, 78, 126, 23);
-				jButton3.addActionListener(new ActionListener() {
-
-					
-					public void actionPerformed(ActionEvent e) {
-						
-					}
-				});
-			}
-			this.setSize(1045, 542);
+			this.setSize(1500, 542);
 			{
 				jMenuBar1 = new JMenuBar();
 				setJMenuBar(jMenuBar1);
@@ -256,7 +239,15 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 					{
 						exitMenuItem = new JMenuItem();
 						jMenu3.add(exitMenuItem);
-						exitMenuItem.setText("Exit");
+						exitMenuItem.setText("Pausar");
+						exitMenuItem.addActionListener(new ActionListener() {
+							
+							@Override
+							public void actionPerformed(ActionEvent arg0) {
+								reproductor.pausar();
+							}
+						});
+						exitMenuItem.setAccelerator(KeyStroke.getKeyStroke('L', InputEvent.CTRL_DOWN_MASK));
 					}
 				}
 				{
@@ -338,10 +329,22 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 		tablaCanciones.setRowSorter(ordenador);
 		tablaCanciones.revalidate();
 		tablaCanciones.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-
-		scrollPane.setBounds(247, 64, 700, 400);
+		scrollPane.setBounds(10, 64, 700, 400);
 		scrollPane.getViewport().add(tablaCanciones);
 		scrollPane.revalidate();
+
+		TableRowSorter<TableModel> ordenadorAnterior = new TableRowSorter<TableModel>(
+				tabReproducidas);
+
+		tablaCancionesReproducidas.setRowSorter(ordenadorAnterior);
+		tablaCancionesReproducidas.revalidate();
+		tablaCancionesReproducidas.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+
+		scrollPaneAnterior.setBounds(750, 64, 700, 400);
+		scrollPaneAnterior.getViewport().add(tablaCancionesReproducidas);
+		scrollPaneAnterior.revalidate();
+
+		getContentPane().add(scrollPaneAnterior);
 		jLabel2.setText(canciones.size() + "");
 		getContentPane().add(scrollPane);
 		
@@ -378,7 +381,7 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 					}
 				}
 			});
-			artistas.setBounds(17, 191, 196, 23);
+			artistas.setBounds(700, 0, 196, 23);
 		}
 		getContentPane().validate();
 		getContentPane().repaint();
@@ -387,14 +390,15 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 	private void reproducirCancion(Cancion cancion,boolean actualizarIndice){
 		reproductor.reproducir(cancion,this);
 		if(actualizarIndice){
-			listaReproducida.add(cancion);
-			indice=listaReproducida.size();
+			tabReproducidas.adicionarCanciones(cancion);
+			indice=tabReproducidas.getRowCount();
+			tablaCancionesReproducidas.revalidate();
+			tablaCancionesReproducidas.repaint();
 		}
 		try {
 			final DAOCancion daoCancion=new DAOCancion();
 			daoCancion.adicionarReproduccion(cancion);
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		ReproductorInterfaz.this.cancion.setText(cancion.getNombre());
@@ -402,14 +406,26 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 		
 	}
 	
+	private Cancion obtenerCancion(int indice){
+		tablaCanciones.changeSelection(indice, 0, false, false);
+		return tab.obtenerCancion(indice);
+		
+	}
+	
+	private Cancion obtenerCancionAnterior(int indice){
+		tablaCancionesReproducidas.changeSelection(indice, 0, false, false);
+		return tab.obtenerCancion(indice);
+		
+	}
+
 	private void cancionRandom(){
-		if(indice==listaReproducida.size()){
+		if(indice==tabReproducidas.getRowCount()){
 			int cantidad=tablaCanciones.getRowCount();
 			int indice=new Double(Math.random()*cantidad).intValue();
 			int fila = indice;
-			reproducirCancion(tab.obtenerCancion(fila),true);
+			reproducirCancion(obtenerCancion(fila),true);
 		}else{
-			Cancion cancion=listaReproducida.get(indice);
+			Cancion cancion=obtenerCancionAnterior(indice);
 			indice++;
 			reproducirCancion(cancion,false);
 		}
@@ -417,8 +433,18 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 	
 	private void reproducirCancionAnterior(){
 		indice--;
-		Cancion can=listaReproducida.get(indice);
+		Cancion can=obtenerCancionAnterior(indice);
 		reproducirCancion(can,false);
+		String nombreColumna=tablaCancionesReproducidas.getColumnName(0);
+		TableColumnModel tableColumnModel=tablaCancionesReproducidas.getColumnModel();
+		Enumeration<TableColumn> en = tableColumnModel.getColumns();
+		while (en.hasMoreElements()) {
+			TableColumn tc = en.nextElement();
+			tc.setCellRenderer(new DefaultTableCellRenderer(){
+				public void setBackground(Color c) {
+					super.setBackground(Color.RED);
+				}});
+		}
 	}
 	
 	@Override

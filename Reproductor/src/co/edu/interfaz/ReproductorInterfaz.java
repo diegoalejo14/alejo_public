@@ -228,6 +228,12 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 							@Override
 							public void actionPerformed(ActionEvent arg0) {
 								buscarCarpeta();
+								try {
+									cargarCanciones();
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
 							}
 						});
 						saveMenuItem.setAccelerator(KeyStroke.getKeyStroke('S', InputEvent.CTRL_DOWN_MASK));
@@ -414,11 +420,14 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 	
 	private Cancion obtenerCancionAnterior(int indice){
 		tablaCancionesReproducidas.changeSelection(indice, 0, false, false);
-		return tab.obtenerCancion(indice);
+		return tabReproducidas.obtenerCancion(indice);
 		
 	}
 
 	private void cancionRandom(){
+		if(indice<0){
+			return;
+		}
 		if(indice==tabReproducidas.getRowCount()){
 			int cantidad=tablaCanciones.getRowCount();
 			int indice=new Double(Math.random()*cantidad).intValue();
@@ -432,6 +441,9 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 	}
 	
 	private void reproducirCancionAnterior(){
+		if(indice==0){
+			return;
+		}
 		indice--;
 		Cancion can=obtenerCancionAnterior(indice);
 		reproducirCancion(can,false);
@@ -442,7 +454,7 @@ public class ReproductorInterfaz extends javax.swing.JFrame implements Observer 
 			TableColumn tc = en.nextElement();
 			tc.setCellRenderer(new DefaultTableCellRenderer(){
 				public void setBackground(Color c) {
-					super.setBackground(Color.RED);
+//					super.setBackground(Color.RED);
 				}});
 		}
 	}
